@@ -68,7 +68,7 @@ palettes = {
 # background tiles use 4 colors, sprites, 3 + transparent
 
 def getChoice ():
-    return 5
+    return 8
 
 paletteChoice = getChoice ()
 

@@ -159,6 +159,7 @@ class Bullet (PhysicalObject):
 
     def invertSpeed (self):
         self.vSpeed *= -1
+        self.vSpeed -= 2
 
     def set (self, x, y, vSpeed):
         self.position [0] = x
@@ -201,11 +202,13 @@ class Enemy (PhysicalObject):
     def __init__ (self):
         PhysicalObject.__init__ (self)
         self.health = 1
+        self.score = 100
 
-    def set (self, x, y, health):
+    def set (self, x, y, health, score):
         self.position [0] = x
         self.position [1] = y
         self.health = health
+        self.score = score
 
     def setAlive (self):
         if self.health <= 0:
@@ -218,6 +221,10 @@ class Alien (Enemy):
 
     def __init__ (self):
         Enemy.__init__ (self)
+        self.direction = False # Left
+
+    def setDirection (self, direction):
+        self.direction = direction
 
     def draw (self):
         sprite.drawSpriteToned (Alien.alienSprite, self.position, self.palette, Enemy.frame, 3 - self.health)
@@ -228,11 +235,15 @@ class Alien (Enemy):
         if self.position [0] >= displayConstants.width:
             self.position [0] = 0
 
+    def bulletCollision (self, other):
+        if PhysicalObject.overlap (self, other):
+            self.health -= 1
+            return True
+        return False
 
-class Scroller (Alien):
+class Looper (Alien):
     def __init__ (self):
         Alien.__init__ (self)
-        self.direction = False # Left
 
     def update (self):
         if Enemy.act ():
@@ -246,11 +257,25 @@ class Scroller (Alien):
 
         self.setAlive ()
 
-    def bulletCollision (self, other):
-        if PhysicalObject.overlap (self, other):
-            self.health -= 1
-            return True
-        return False
+class Flipper (Alien):
+    def _init__ (self):
+        Alien.__init__ (self)
+
+    def update (self):
+        if Enemy.act ():
+            if self.direction:
+                self.position [0] += 8
+            else:
+                self.position [0] -= 8
+
+            if self.position [0] < 0:
+                self.position [0] += 16
+                self.direction = not self.direction
+            if self.position [0] >= displayConstants.width:
+                self.position [0] -= 16
+                self.direction = not self.direction
+        self.draw ()
+        self.setAlive ()
 
 class Brick (Enemy):
 

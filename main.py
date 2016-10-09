@@ -28,7 +28,8 @@ def mainMenu ():
     pass
 
 def displayHUD ():
-    pass
+    objects.sprite.drawNumber ((0, 0), 0, runner.score)
+    objects.sprite.drawNumber ((8 * 14, 0), 0, runner.highscore)
     
 
 runner.resetGame ()
@@ -51,6 +52,7 @@ while running:
             state = False
     else:
         pass
+    displayHUD ()
     objects.sprite.flip ()
 
 pygame.quit ()

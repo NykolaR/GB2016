@@ -10,6 +10,7 @@ loaded = []
 
 screen = pygame.display.set_mode (displayConstants.size)
 
+
 def clear ():
     screen.fill (displayConstants.palette [3])
 
@@ -33,6 +34,8 @@ def loadSprite (name, index):
 
     return len(loaded) - 1
 
+numbersIndex = loadSprite ("game/resources/numbers.hex", 0)
+
 def drawSprite (spriteIndex, position, pal, frame):
     count = frame * 64 # 8x8 tile = 64 pixels over
     for y in range (0, 8):
@@ -51,6 +54,12 @@ def drawSpriteToned (spriteIndex, position, pal, frame, tone):
                 screen.set_at ((position[0] + x, position [1] + y), getColor (pal, loaded [spriteIndex][count] + tone))
             count += 1
 
+def drawNumber (position, pal, number):
+    numString = str (number)
+    count = 0
+    for char in numString:
+        drawSprite (numbersIndex, (position [0] + count * 8, position [1]), pal, int (char))
+        count += 1
 
 def getColor (palette, index):
         return displayConstants.paletteS1 [index]

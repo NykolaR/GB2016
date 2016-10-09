@@ -17,6 +17,7 @@ class Runner:
         Total = 34
         """
         self.player = gameobject.Player ()
+        self.numBullets = 1
         self.playerBullets = []
         self.enemyBullets = []
         self.enemies = []
@@ -24,25 +25,39 @@ class Runner:
         self.vitals = []
         self.resetGame ()
 
+        self.board = 0
+
     def update (self):
 
         gameobject.Enemy.animationUpdate ()
         gameobject.Enemy.actionUpdate ()
 
         if inputhandler.keyPressed (2): # Fire
-            if len (self.playerBullets) < 3:
+            if len (self.playerBullets) < self.numBullets:
                 b = gameobject.Bullet ()
-                b.set (self.player.position [0], self.player.position [1], -5)
+                b.set (self.player.position [0], self.player.position [1], -3)
                 self.playerBullets.append (b)
 
         for enemy in self.enemies:
             enemy.update ()
             if not enemy.alive:
+                self.score += enemy.score
                 self.enemies.remove (enemy)
+
+        for vital in self.vitals:
+            vital.update ()
+            if not vital.alive:
+                self.score += vital.score
+                self.vitals.remove (vital)
+
+        if len (self.vitals) == 0:
+            board += 1
+            self.loadLevel ()
 
         for barrier in self.barriers:
             barrier.update ()
             if not barrier.alive:
+                self.score += barrier.score
                 self.barriers.remove (barrier)
 
         for pBullet in self.playerBullets:
@@ -58,8 +73,15 @@ class Runner:
                     self.enemyBullets.append (pBullet)
                     pBullet.invertSpeed ()
                     pBullet.alive = False
+                    self.playerBullets.remove (pBullet)
             if not pBullet.alive:
                 pBullet.alive = True
+
+            for vital in self.vitals:
+                if vital.bulletCollision (pBullet) and pBullet.alive:
+                    pBullet.alive = False
+            if not pBullet.alive:
+                self.playerBullets.remove (pBullet)
 
         for eBullet in self.enemyBullets:
             eBullet.update ()
@@ -90,14 +112,124 @@ class Runner:
         self.enemyBullets = []
         self.enemies = []
 
-        for i in range (2):
-            e = gameobject.Scroller ()
-            e.set (16 + i * 16, 32, 3)
-            self.enemies.append (e)
-        for i in range (2):
-            e = gameobject.Brick ()
-            e.set (16 + i * 32, 8, 3)
-            self.barriers.append (e)
+        self.board = 0
+
+        self.loadLevel ()
 
     def gameOver (self):
         return not (self.player.alive)
+
+    boards = {
+            0 : "5.hex",
+            1 : "4.hex",
+            2 : "3.hex",
+            3 : "2.hex",
+            4 : "1.hex"
+            }
+
+    def loadLevel (self):
+        loadBoard = self.boards [4 - (self.board % 5)] # file string
+        boardLevel = self.board / 5 # Number of reps
+
+        if loadBoard == 0 and boardLevel > 1: # score bonus, speed up
+            self.score += 10000 * boardLevel
+
+        """
+        File legend:
+        0 = add nothing
+        1 = barrier (1 HP, 200pts)
+        2 = barrier (2 HP, 400pts)
+        3 = barrier (3 HP, 600pts)
+        4 = looper (2 HP, 200pts, LEFT)
+        5 = looper (2 HP, 200pts, RIGHT)
+        6 = looper (3 HP, 300pts, LEFT)
+        7 = looper (3 HP, 300pts, RIGHT)
+        8 = flipper (2 HP, 200pts, LEFT)
+        9 = flipper (2 HP, 200pts, RIGHT)
+        A = flipper (3 HP, 300pts, LEFT)
+        B = flipper (3 HP, 300pts, RIGHT)
+        C = vitals (1 HP, 600pts)
+        D = vitals (2 HP, 1200pts)
+        E = vitals (3 HP, 2400pts)
+
+        NOTE: All points multiplied by boardLevel + 1.
+        All HP increased by boardLevel
+        """
+
+        self.enemies = []
+        self.barriers = []
+        self.vitals = []
+        print ("game/resources/boards/" + loadBoard)
+        tempFile = open ("game/resources/boards/" + loadBoard) # open file
+        dat = tempFile.readlines () [0]
+        count = 0
+        
+        for num in dat:
+            if num != '0':
+                if num == '1' or num == '2' or num == '3':
+                    self.addBarrier (num, count, False, boardLevel)
+                if num=='4' or num=='5' or num=='6' or num=='7':
+                    self.addLooper (num, count, boardLevel)
+                if num=='8' or num=='9' or num=='A' or num=='B':
+                    self.addFlipper (num, count, boardLevel)
+                if num=='C' or num=='D' or num=='E':
+                    self.addBarrier (num, count, True, boardLevel)
+            count += 1
+
+    def addBarrier (self, num, count, vitals, scale):
+        e = gameobject.Brick ()
+        e.set ((count % 20) * 8, (count / 20 + 2) * 8, self.hitPoints [num] + scale, self.scores [num] * (scale + 1))
+        if vitals:
+            self.vitals.append (e)
+        else:
+            self.barriers.append (e)
+
+    def addFlipper (self, num, count, scale):
+        e = gameobject.Flipper ()
+        e.set ((count % 20) * 8, (count / 20 + 2) * 8, self.hitPoints [num] + scale, self.scores [num] * (scale + 1))
+        if num=='9' or num=='B':
+            e.direction = True
+        self.enemies.append (e)
+
+    def addLooper (self, num, count, scale):
+        e = gameobject.Looper ()
+        e.set ((count % 20) * 8, (count / 20 + 2) * 8, self.hitPoints [num] + scale, self.scores [num] * (scale + 1))
+        if num=='5' or num=='7':
+            e.direction = True
+        self.enemies.append (e)
+
+
+    scores = {
+            '1' : 100,
+            '2' : 200,
+            '3' : 300,
+            '4' : 100,
+            '5' : 100,
+            '6' : 150,
+            '7' : 150,
+            '8' : 100,
+            '9' : 100,
+            'A' : 150,
+            'B' : 150,
+            'C' : 250,
+            'D' : 500,
+            'E' : 1000
+            }
+     
+    hitPoints = {
+            '1' : 1,
+            '2' : 2,
+            '3' : 3,
+            '4' : 2,
+            '5' : 2,
+            '6' : 3,
+            '7' : 3,
+            '8' : 2,
+            '9' : 2,
+            'A' : 3,
+            'B' : 3,
+            'C' : 1,
+            'D' : 2,
+            'E' : 3
+            }
+
