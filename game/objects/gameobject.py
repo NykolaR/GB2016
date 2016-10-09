@@ -33,18 +33,12 @@ class PhysicalObject (GameObject):
     def update (self):
         pass
 
-    def collision (self, other):
-        pass
-
-    def bulletCollision (self, other):
-        pass
-
+    @staticmethod
     def overlap (one, two):
         """
         Return true if two objects overlap each other
         """
-        return (two.position [0] > one.position [0] and two.position [0] < one.position [0] + 8) and (two.position [1] > one.position [1] and two.position [1] < one.position [1] + 8)
-        
+        return (one.position [0] < two.position [0] + 8 and one.position [0] + 8 > two.position [0] and one.position [1] < two.position [1] + 8 and one.position [1] + 8 > two.position [1])
 
 class Player (PhysicalObject):
     """
@@ -146,7 +140,7 @@ class Player (PhysicalObject):
     def draw (self):
         if self.shadow > 0:
             sprite.drawSpriteToned (self.spriteData, self.shadowPos, self.palette, self.frame, 3 - self.shadow)
-        sprite.drawSprite (self.spriteData, self.position, self.palette, self.frame)
+        sprite.drawSpriteToned (self.spriteData, self.position, self.palette, self.frame, self.initialHealth - self.health)
 
 
 class Bullet (PhysicalObject):
@@ -163,11 +157,118 @@ class Bullet (PhysicalObject):
         if (self.position [1] < -8) | (self.position [1] > displayConstants.height + 8):
             self.alive = False
 
+    def invertSpeed (self):
+        self.vSpeed *= -1
+
     def set (self, x, y, vSpeed):
         self.position [0] = x
         self.position [1] = y
         self.vSpeed = vSpeed
 
     def draw (self):
-        sprite.drawSprite (Bullet.bulletSprite, self.position, self.palette, Bullet.bulletFrame);
+        sprite.drawSprite (Bullet.bulletSprite, self.position, self.palette, Bullet.bulletFrame)
+
+class Enemy (PhysicalObject):
+
+    frame = 0
+    animationSpeed = 10
+    animationCount = 0
+    actSpeed = 120
+    actCount = 0
+    
+    @staticmethod
+    def animationUpdate ():
+        Enemy.animationCount += 1
+        if Enemy.animationCount >= Enemy.animationSpeed:
+            Enemy.animationCount = 0
+            if Enemy.frame == 0:
+                Enemy.frame = 1
+            else:
+                Enemy.frame = 0
+
+    @staticmethod
+    def actionUpdate ():
+        Enemy.actCount += 1
+        if Enemy.actCount > Enemy.actSpeed:
+            Enemy.actCount = 0
+
+    @staticmethod
+    def act ():
+        if Enemy.actCount == Enemy.actSpeed:
+            return True
+        return False
+
+    def __init__ (self):
+        PhysicalObject.__init__ (self)
+        self.health = 1
+
+    def set (self, x, y, health):
+        self.position [0] = x
+        self.position [1] = y
+        self.health = health
+
+    def setAlive (self):
+        if self.health <= 0:
+            self.alive = False
+
+
+class Alien (Enemy):
+
+    alienSprite = sprite.loadSprite ("game/resources/alien.hex", 0)
+
+    def __init__ (self):
+        Enemy.__init__ (self)
+
+    def draw (self):
+        sprite.drawSpriteToned (Alien.alienSprite, self.position, self.palette, Enemy.frame, 3 - self.health)
+
+    def loop (self):
+        if self.position [0] < 0:
+            self.position [0] = displayConstants.width - 8
+        if self.position [0] >= displayConstants.width:
+            self.position [0] = 0
+
+
+class Scroller (Alien):
+    def __init__ (self):
+        Alien.__init__ (self)
+        self.direction = False # Left
+
+    def update (self):
+        if Enemy.act ():
+            if self.direction:
+                self.position [0] += 8
+            else:
+                self.position [0] -= 8
+
+            self.loop ()
+        self.draw ()
+
+        self.setAlive ()
+
+    def bulletCollision (self, other):
+        if PhysicalObject.overlap (self, other):
+            self.health -= 1
+            return True
+        return False
+
+class Brick (Enemy):
+
+    brickSprite = sprite.loadSprite ("game/resources/alien.hex", 1)
+
+    def __init__ (self):
+        Enemy.__init__ (self)
+
+    def bulletCollision (self, other):
+        if PhysicalObject.overlap (self, other):
+            self.health -= 1
+            return True
+        return False
+
+    def update (self):
+        self.draw ()
+        self.setAlive ()
+
+    def draw (self):
+        sprite.drawSpriteToned (Brick.brickSprite, self.position, self.palette, 0, 3 - self.health)
 

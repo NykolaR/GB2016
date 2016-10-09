@@ -42,6 +42,8 @@ def drawSprite (spriteIndex, position, pal, frame):
             count += 1
 
 def drawSpriteToned (spriteIndex, position, pal, frame, tone):
+    if tone < 0:
+        tone = 0
     count = frame * 64 # 8x8 tile = 64 pixels over
     for y in range (0, 8):
         for x in range (0, 8):

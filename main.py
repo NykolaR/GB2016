@@ -27,7 +27,11 @@ def runGame ():
 def mainMenu ():
     pass
 
-resetGame ()
+def displayHUD ():
+    pass
+    
+
+runner.resetGame ()
 
 while running:
     objects.inputhandler.updateKeyboard ()
