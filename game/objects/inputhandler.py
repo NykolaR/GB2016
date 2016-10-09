@@ -5,6 +5,7 @@
 ###
 
 import pygame
+import numpy
 
 # General handling
 class INPUT:
@@ -13,22 +14,30 @@ class INPUT:
 class KEYS:
     LEFT, RIGHT, FIRE, NUMKEYS = range (4)
 
-keys = [[False for i in xrange (2)] for i in xrange (KEYS.NUMKEYS)]
+keys = numpy.zeros ( (2, KEYS.NUMKEYS), dtype = bool)
 
 def handle (e):
     keyboardHandle (e)
 
+def updateKeyboard ():
+    for i in range (3):
+        pressed (i)
+
 def keyboardHandle (e):
     if e.type == pygame.KEYDOWN:
-        if e.key == pygame.K_LEFT:
+        if e.key == pygame.K_LEFT or e.key == pygame.K_a:
             setKey (KEYS.LEFT, True)
-        if e.key == pygame.K_RIGHT:
+        if e.key == pygame.K_RIGHT or e.key == pygame.K_d:
             setKey (KEYS.RIGHT, True)
+        if e.key == pygame.K_z or e.key == pygame.K_SPACE:
+            setKey (KEYS.FIRE, True)
     if e.type == pygame.KEYUP:
-        if e.key == pygame.K_LEFT:
+        if e.key == pygame.K_LEFT or e.key == pygame.K_a:
             setKey (KEYS.LEFT, False)
-        if e.key == pygame.K_RIGHT:
+        if e.key == pygame.K_RIGHT or e.key == pygame.K_d:
             setKey (KEYS.RIGHT, False)
+        if e.key == pygame.K_z or e.key == pygame.K_SPACE:
+            setKey (KEYS.FIRE, False)
 
 
 def key (key):
@@ -55,5 +64,5 @@ def setKey (key, value):
             keys [INPUT.KEY_PRESSED][key] = True
     else:
         # Not pressed
-        keys [INPUT.KEY_DOWN][key] = value
-        keys [INPUT.KEY_PRESSED][key] = value
+        keys [INPUT.KEY_DOWN][key] = False
+        keys [INPUT.KEY_PRESSED][key] = False

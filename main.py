@@ -9,34 +9,44 @@ pygame.init ()
 # Written for: GBJam, Itch.io
 # By: NykolaR
 
-#ball = pygame.image.load ("ball.bmp")
-#ballrect = ball.get_rect ()
-
 clock = pygame.time.Clock ()
 running = True
 logging = False
 
-player = objects.gameobject.Player ()
+state = True # False, main, True, running
 
-objects.sprite.loadSprite ("game/resources/char.hex", 0)
+runner = game.gamerunner.Runner ()
+runner.resetGame ()
+
+def resetGame ():
+    runner.resetGame ()
+
+def runGame ():
+    runner.update ()
+
+def mainMenu ():
+    pass
+
+resetGame ()
 
 while running:
-    for event in pygame.event.get ():
-        if event.type == pygame.QUIT: running = False # Exit game
+    objects.inputhandler.updateKeyboard ()
+    for pyEvent in pygame.event.get ():
+        if pyEvent.type == pygame.QUIT: running = False # Exit game
+        else:
+            objects.inputhandler.handle (pyEvent)
 
     clock.tick_busy_loop (60)
     if logging: print (clock.get_fps ())
-    #ballrect = ballrect.move (speed)
-    #if ballrect.left < 0 or ballrect.right > width:
-    #    speed [0] = -speed [0]
-    #if ballrect.top < 0 or ballrect.bottom > height:
-    #    speed [1] = -speed [1]
 
-    #screen.fill (palette[3])
     objects.sprite.clear ()
-    player.update ()
+    if state:
+        runner.update ()
+        if runner.gameOver ():
+            runner.resetGame ()
+            state = False
+    else:
+        pass
     objects.sprite.flip ()
-    #screen.blit (ball, ballrect)
-    #pygame.display.flip ()
 
 pygame.quit ()

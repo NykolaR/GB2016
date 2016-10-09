@@ -15,9 +15,10 @@ class Runner:
 
     def update (self):
         if inputhandler.keyPressed (2): # Fire
-            b = gameobject.Bullet ()
-            b.set (self.player.position [0], self.player.position [1], -5)
-            self.playerBullets.append (b)
+            if len (self.playerBullets) < 3:
+                b = gameobject.Bullet ()
+                b.set (self.player.position [0], self.player.position [1], -5)
+                self.playerBullets.append (b)
 
         for enemy in self.enemies:
             enemy.update ()

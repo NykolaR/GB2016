@@ -1,6 +1,14 @@
 Author: NykolaR
 Purpose: GBJam 2016 entry
 
-Will it be finished? Maybe, maybe not.
+HI SPACE
 
-Version: 1.0
+Developed using pygame for GameBoy Jam 2016.
+
+Controls:
+
+WASD/Arrows - Move
+Double tap direction - Dash
+Space/Z - Shoot
+
+Version: 2.0
