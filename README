@@ -1,9 +1,9 @@
 Author: NykolaR
 Purpose: GBJam 2016 entry
 
-HI SPACE
+HI5PACE
 
-Developed using pygame for GameBoy Jam 2016.
+Developed using pygame for GameBoy Jam 2016. Ran through main.py
 
 Controls:
 
@@ -11,4 +11,6 @@ WASD/Arrows - Move
 Double tap direction - Dash
 Space/Z - Shoot
 
-Version: 2.0
+Try pushing buttons quickly on the title screen to get different palettes!
+
+Version: 3.0 - Final ?
