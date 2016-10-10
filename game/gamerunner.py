@@ -1,11 +1,21 @@
-import objects
+import objects, pygame
 from objects import gameobject
 from objects import inputhandler
+
+import random
 
 class Runner:
     def __init__ (self):
         self.score = 0
         self.highscore = 0
+        self.enemyROF = 2500
+        self.defaultEnemyROF = 2500
+
+        self.pshoot = pygame.mixer.Sound ("game/resources/sounds/pshoot.ogg")
+        self.phit = pygame.mixer.Sound ("game/resources/sounds/phit.ogg")
+        self.eshoot = pygame.mixer.Sound ("game/resources/sounds/eshoot.ogg")
+        self.ehit = pygame.mixer.Sound ("game/resources/sounds/ehit.ogg")
+        self.vhit = pygame.mixer.Sound ("game/resources/sounds/vhit.ogg")
         
         """
         Number of sprite objects:
@@ -23,26 +33,47 @@ class Runner:
         self.enemies = []
         self.barriers = []
         self.vitals = []
-        self.resetGame ()
-
         self.board = 0
 
     def update (self):
-
         gameobject.Enemy.animationUpdate ()
         gameobject.Enemy.actionUpdate ()
 
-        if inputhandler.keyPressed (2): # Fire
+        if gameobject.Enemy.bigAct ():
+            for enemy in self.enemies:
+                enemy.position [1] += 8
+                if enemy.position [1] > 14 * 8:
+                    self.player.alive = False
+            for enemy in self.barriers:
+                enemy.position [1] += 8
+                if enemy.position [1] > 14 * 8:
+                    self.player.alive = False
+            for enemy in self.vitals:
+                enemy.position [1] += 8
+                if enemy.position [1] > 14 * 8:
+                    self.player.alive = False
+            gameobject.Enemy.bigActCount = 0
+
+        if inputhandler.key (2): # Fire
             if len (self.playerBullets) < self.numBullets:
                 b = gameobject.Bullet ()
                 b.set (self.player.position [0], self.player.position [1], -3)
                 self.playerBullets.append (b)
+                self.pshoot.stop ()
+                self.pshoot.play ()
 
         for enemy in self.enemies:
             enemy.update ()
             if not enemy.alive:
                 self.score += enemy.score
                 self.enemies.remove (enemy)
+            else:
+                if len (self.enemyBullets) <= 10 and random.randint (0, self.enemyROF) == 0:
+                    b = gameobject.Bullet ()
+                    b.set (enemy.position [0], enemy.position [1], 1)
+                    self.enemyBullets.append (b)
+                    self.eshoot.stop ()
+                    self.eshoot.play ()
 
         for vital in self.vitals:
             vital.update ()
@@ -51,7 +82,11 @@ class Runner:
                 self.vitals.remove (vital)
 
         if len (self.vitals) == 0:
-            board += 1
+            self.board += 1
+            if self.enemyROF > 500:
+                self.enemyROF -= 200
+            gameobject.Enemy.difficultyIncrease ()
+            self.player.health = self.player.initialHealth
             self.loadLevel ()
 
         for barrier in self.barriers:
@@ -65,6 +100,8 @@ class Runner:
             for enemy in self.enemies:
                 if pBullet.alive and enemy.bulletCollision (pBullet):
                     pBullet.alive = False
+                    self.ehit.stop ()
+                    self.ehit.play ()
             if not pBullet.alive:
                 self.playerBullets.remove (pBullet)
 
@@ -74,19 +111,26 @@ class Runner:
                     pBullet.invertSpeed ()
                     pBullet.alive = False
                     self.playerBullets.remove (pBullet)
+                    self.ehit.stop ()
+                    self.ehit.play ()
             if not pBullet.alive:
                 pBullet.alive = True
 
             for vital in self.vitals:
                 if vital.bulletCollision (pBullet) and pBullet.alive:
                     pBullet.alive = False
+                    self.vhit.stop ()
+                    self.vhit.play ()
             if not pBullet.alive:
-                self.playerBullets.remove (pBullet)
+                if self.playerBullets.count (pBullet) > 0:
+                    self.playerBullets.remove (pBullet)
 
         for eBullet in self.enemyBullets:
             eBullet.update ()
             if eBullet.alive and self.player.bulletCollision (eBullet):
                 eBullet.alive = False
+                self.phit.stop ()
+                self.phit.play ()
             if not eBullet.alive:
                 self.enemyBullets.remove (eBullet)
         
@@ -101,6 +145,9 @@ class Runner:
         game score,
         and bullets/enemies
         """
+
+        self.enemyROF = self.defaultEnemyROF
+
         # Reset player
         self.player.reset ()
 
@@ -115,6 +162,7 @@ class Runner:
         self.board = 0
 
         self.loadLevel ()
+        gameobject.Enemy.resetThings ()
 
     def gameOver (self):
         return not (self.player.alive)
@@ -159,7 +207,6 @@ class Runner:
         self.enemies = []
         self.barriers = []
         self.vitals = []
-        print ("game/resources/boards/" + loadBoard)
         tempFile = open ("game/resources/boards/" + loadBoard) # open file
         dat = tempFile.readlines () [0]
         count = 0

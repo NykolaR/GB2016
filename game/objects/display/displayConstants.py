@@ -1,4 +1,7 @@
 # Display constants
+import pygame
+
+pygame.init ()
 
 size = width, height = 160, 144 # 20x18
 fps = 60
@@ -66,18 +69,20 @@ palettes = {
 
 # full pallete
 # background tiles use 4 colors, sprites, 3 + transparent
+palette = palettes [0]
+paletteS1 = [ palette [0], palette [1], palette [2], c5]
+paletteS2 = [ palette [1], palette [2], palette [3], c5]
 
-def getChoice ():
-    return 8
-
-paletteChoice = getChoice ()
-
-palette = palettes [paletteChoice]
+def setPalette (pal):
+    palette = palettes [pal]
+    paletteS1 [0] = palette [0]
+    paletteS1 [1] = palette [1]
+    paletteS1 [2] = palette [2]
+    paletteS1 [3] = palette [3]
+    paletteS2 = [ palette [1], palette [2], palette [3], c5]
 
 # sprite palletes
 # [0] is a 'light' shade
 # [1] is a 'shading' shade
 # [2] is a 'dark' shade
 # [3] is transparent, and shouldn't be called
-paletteS1 = [ palette [0], palette [1], palette [2], c5]
-paletteS2 = [ palette [1], palette [2], palette [3], c5]

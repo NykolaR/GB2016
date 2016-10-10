@@ -4,11 +4,12 @@
 import pygame
 from display import displayConstants
 
-debug = True
+debug = False
 
 loaded = []
 
 screen = pygame.display.set_mode (displayConstants.size)
+pygame.display.set_caption ("HI SPACE")
 
 
 def clear ():
@@ -35,6 +36,7 @@ def loadSprite (name, index):
     return len(loaded) - 1
 
 numbersIndex = loadSprite ("game/resources/numbers.hex", 0)
+lettersIndex = loadSprite ("game/resources/letters.hex", 0)
 
 def drawSprite (spriteIndex, position, pal, frame):
     count = frame * 64 # 8x8 tile = 64 pixels over
@@ -59,6 +61,24 @@ def drawNumber (position, pal, number):
     count = 0
     for char in numString:
         drawSprite (numbersIndex, (position [0] + count * 8, position [1]), pal, int (char))
+        count += 1
+
+letters = {
+        'H' : 0,
+        'I' : 1,
+        'P' : 2,
+        'A' : 3,
+        'C' : 4,
+        'E' : 5
+        }
+
+def drawLetters (position, pal, string, fade):
+    count = 0
+    for char in string:
+        if char.isdigit ():
+            drawNumber ((position [0] + count * 8, position [1]), pal, int (char))
+        else:
+            drawSpriteToned (lettersIndex, (position [0] + count * 8, position [1]), pal, letters [char], fade)
         count += 1
 
 def getColor (palette, index):

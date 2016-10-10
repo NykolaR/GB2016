@@ -174,8 +174,26 @@ class Enemy (PhysicalObject):
     frame = 0
     animationSpeed = 10
     animationCount = 0
-    actSpeed = 120
+    defaultActSpeed = 150
+    actSpeed = 150
     actCount = 0
+
+    bigActSpeed = 15
+    bigActCount = 0
+
+    @staticmethod
+    def difficultyIncrease ():
+        if Enemy.actSpeed > 50:
+            Enemy.actSpeed -= 10
+        if Enemy.bigActSpeed > 5:
+            Enemy.bigActSpeed -= 1
+
+    @staticmethod
+    def resetThings ():
+        Enemy.actSpeed = Enemy.defaultActSpeed
+        Enemy.actCount = 0
+        Enemy.bigActCount = 0
+        Enemy.bigActSpeed = 15
     
     @staticmethod
     def animationUpdate ():
@@ -191,11 +209,18 @@ class Enemy (PhysicalObject):
     def actionUpdate ():
         Enemy.actCount += 1
         if Enemy.actCount > Enemy.actSpeed:
+            Enemy.bigActCount += 1
             Enemy.actCount = 0
 
     @staticmethod
     def act ():
         if Enemy.actCount == Enemy.actSpeed:
+            return True
+        return False
+
+    @staticmethod
+    def bigAct ():
+        if Enemy.bigActCount == Enemy.bigActSpeed:
             return True
         return False
 
